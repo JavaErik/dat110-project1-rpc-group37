@@ -18,24 +18,20 @@ public class RPCClient {
 	
 	public void connect() {
 		
-		// TODO - START
 		// connect using the RPC client
-		
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
+		connection = msgclient.connect();
+		if (connection == null) {
+			throw new IllegalStateException("RPCClient: could not establish messaging connection");
+		}
 	}
 	
 	public void disconnect() {
 		
-		// TODO - START
 		// disconnect by closing the underlying messaging connection
-		
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
+		if (connection != null) {
+			connection.close();
+			connection = null;
+		}
 	}
 
 	/*
@@ -45,11 +41,16 @@ public class RPCClient {
 	 param is the marshalled parameter of the method to be called
 	 */
 
-	public byte[] call(byte rpcid, byte[] param) {
+		public byte[] call(byte rpcid, byte[] param) {
 		
 		byte[] returnval = null;
-		
-		// TODO - START
+
+		if (connection == null) {
+			throw new IllegalStateException("RPCClient: not connected");
+		}
+		if (param == null) {
+			param = new byte[0];
+		}
 
 		/*
 
@@ -59,12 +60,33 @@ public class RPCClient {
 
 		*/
 				
-		if (true)
-			throw new UnsupportedOperationException(TODO.method());
-		
-		// TODO - END
+		// 1) encapsulate into RPC request payload
+		byte[] rpcRequest = RPCUtils.encapsulate(rpcid, param);
+
+		// 2) send request over messaging layer
+		connection.send(new Message(rpcRequest));
+
+		// 3) receive reply over messaging layer
+		Message reply = connection.receive();
+		if (reply == null) {
+			throw new IllegalStateException("RPCClient: received null reply");
+		}
+
+		byte[] rpcReply = reply.getData();
+
+		// (Optional but nice sanity check)
+		if (rpcReply == null || rpcReply.length < 1) {
+			throw new IllegalStateException("RPCClient: invalid RPC reply");
+		}
+		byte replyRpcid = rpcReply[0];
+		if (replyRpcid != rpcid) {
+			throw new IllegalStateException("RPCClient: mismatching rpcid in reply");
+		}
+
+		// 4) decapsulate return value (payload)
+		returnval = RPCUtils.decapsulate(rpcReply);
+
 		return returnval;
-		
 	}
 
 }
