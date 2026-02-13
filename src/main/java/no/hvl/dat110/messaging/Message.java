@@ -1,37 +1,24 @@
 package no.hvl.dat110.messaging;
 
-import java.util.Arrays;
-
-import no.hvl.dat110.TODO;
-
 public class Message {
 
-	public static final int MAX_PAYLOAD_SIZE = 127;
-
-
 	// the up to 127 bytes of data (payload) that a message can hold
-	private final byte[] data;
+	private byte[] data;
 
 	// construction a Message with the data provided
 	public Message(byte[] data) {
 
-		if(data==null) {
-			throw new IllegalArguementException("Message data cannot be null");
+		if (data == null) {
+			throw new IllegalArgumentException("Message data cannot be null");
+		}
+		if (data.length > 127) {
+			throw new IllegalArgumentException("Message data cannot be longer than 127 bytes");
+		}
 
-		}
-		if(data.length > MAX_PAYLOAD_SIZE) {
-			throw new illegallArguementException("Message data cannot be longer than " + MAX_PAYLOAD_SIZE +"bytes");
-		}
-		this.data = Arrays.copyOf(data,data.length);
+		this.data = data;
 	}
+
 	public byte[] getData() {
-		return Arrays.copyOf(data, data.length);
+		return this.data;
 	}
-	public int getLength() {
-		return data.length;
-	}
-		
-	}
-
-
-
+}
